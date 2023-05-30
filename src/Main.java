@@ -58,8 +58,8 @@ public class Main {
             e.printStackTrace();
         }
 
-        //
-        try {
+        //test
+        /**try {
             List<String> resultList = new ArrayList<>();
             resultList = Files.readAllLines(Paths.get(result));
             String s = resultList.get(0);
@@ -70,14 +70,14 @@ public class Main {
             System.out.println(suggestionsString);
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
-    public static String getSuggestions(String context, String suggestionData) {
+    /**public static String getSuggestions(String context, String suggestionData) {
         //transform sequence into number
         int sequenceNumber = sequenzaANumero(context);
         return suggestionData.substring(sequenceNumber*6,(sequenceNumber*6)+6 );
-    }
+    }*/
 
     /*****************************************************/
     public static int[][] calcola(List<String> sentences) {
