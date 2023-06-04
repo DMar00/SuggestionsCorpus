@@ -2,86 +2,60 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Main {
-    final static int BASE = 28; // Range dei numeri compresi tra 0 e 27
-    public record Coppia(char carattere, int numOcc) implements Comparable<Coppia>{
+    final static int BASE = 28;
+    final static int NUM_SUG = 8;
+    public record Couple(char character, int numOcc) implements Comparable<Couple>{
         @Override
         public String toString() {
-            return carattere + ":"+ numOcc;
+            return character + ":"+ numOcc;
         }
 
         @Override
-        public int compareTo(Coppia o) {
-            if(o.carattere == '*' || carattere == '*') {
-                if(o.carattere == carattere)
+        public int compareTo(Couple o) {
+            if(o.character == '*' || character == '*') {
+                if(o.character == character)
                     return 0;
-                return o.carattere == '*' ? -1 : 1;
+                return o.character == '*' ? -1 : 1;
             }
             return Integer.compare(o.numOcc, numOcc);
         }
     }
 
-    public static void main(String[] args) {
-        String corpus = "C:\\Users\\dmari\\Downloads\\eng_news_2020_10K\\eng_news_2020_10K-sentences.txt";
+    public static void main(String[] args) throws IOException {
+        //todo change corpus
+        String corpus = "C:\\Users\\dmari\\IdeaProjects\\SuggestionsCorpus\\files\\eng_news_2020_1M-sentences.txt";
         String result = "C:\\Users\\dmari\\IdeaProjects\\SuggestionsCorpus\\files\\result.txt";
 
         //sentences contains all strings in lowercase
-        List<String> sentences = new ArrayList<>();
+        List<String> sentences = Files.readAllLines(Paths.get(corpus));
+        sentences = sentences.stream().map(String::toLowerCase).collect(Collectors.toList());
 
-        //generate file result.txt
-        try {
-            sentences = Files.readAllLines(Paths.get(corpus));
-            sentences = sentences.stream().map(String::toLowerCase).collect(Collectors.toList());
+        int[][] occurrences = calculateSuggestions(sentences);
 
-            int[][] occorrenze = calcola(sentences);
+        PrintWriter pw = new PrintWriter(result);
 
-            PrintWriter pw = new PrintWriter(result);
-
-            for(int i=0; i<occorrenze.length; i++) {
-                System.out.print(numeroASequenza(i, 4) +'\t');
-                Coppia[] oc = new Coppia[occorrenze[i].length];
-                for(int j=0 ; j < occorrenze[i].length; j++)
-                    oc[j] = new Coppia(numToChar(j), occorrenze[i][j]);
-                Arrays.sort(oc);
-                System.out.println(Arrays.toString(oc));
-                for(int w = 0 ; w<6 ; w++) {
-                    pw.print(oc[w].carattere);
-                }
+        for(int i=0; i<occurrences.length; i++) {
+            System.out.print(numToSequence(i, 4) +'\t');
+            Couple[] oc = new Couple[occurrences[i].length];
+            for(int j=0 ; j < occurrences[i].length; j++)
+                oc[j] = new Couple(numToChar(j), occurrences[i][j]);
+            Arrays.sort(oc);
+            System.out.println(Arrays.toString(oc));
+            for(int w = 0 ; w<NUM_SUG ; w++) {
+                pw.print(oc[w].character);
             }
-            pw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
-        //test
-        /**try {
-            List<String> resultList = new ArrayList<>();
-            resultList = Files.readAllLines(Paths.get(result));
-            String s = resultList.get(0);
-
-            String context = "aron";
-            int nSuggestions = 4; //[max 28]
-            String suggestionsString = getSuggestions(context, s);
-            System.out.println(suggestionsString);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
+        pw.close();
     }
 
-    /**public static String getSuggestions(String context, String suggestionData) {
-        //transform sequence into number
-        int sequenceNumber = sequenzaANumero(context);
-        return suggestionData.substring(sequenceNumber*6,(sequenceNumber*6)+6 );
-    }*/
-
     /*****************************************************/
-    public static int[][] calcola(List<String> sentences) {
-        int res[][] = new int[BASE*BASE*BASE*BASE][];
+    public static int[][] calculateSuggestions(List<String> sentences) {
+        int[][] res = new int[BASE*BASE*BASE*BASE][];
 
         for( int i=0; i<res.length; i++)
             res[i] = new int[BASE];
@@ -89,40 +63,42 @@ public class Main {
         for(String s : sentences) {
             for(int i=0; i < s.length(); i++) {
                 int p = i - 4;
-                String spaces = "";
+                StringBuilder spaces = new StringBuilder();
                 for(; p<0 ; p++)
-                    spaces += " ";
+                    spaces.append(" ");
                 String cur = spaces + s.substring(p, i);
-                res[sequenzaANumero(cur)][charToNum(s.charAt(i))]++;
+                res[sequenceToNum(cur)][charToNum(s.charAt(i))]++;
             }
         }
         return res;
     }
 
-    /*****************************************************/
-    public static int sequenzaANumero(String sequenza) {
-        int numero = 0;
-        for (int i = 0; i < sequenza.length(); i++) {
-            char c = sequenza.charAt(i);
-            int n = charToNum(c);
-            numero += n * Math.pow(BASE, i);
-        }
-        return numero;
+    public static String getSuggestions(String context, String suggestionData) {
+        int sequenceNumber = sequenceToNum(context);
+        return suggestionData.substring(sequenceNumber*NUM_SUG,(sequenceNumber*NUM_SUG)+NUM_SUG);
     }
 
-    public static String numeroASequenza(int numero, int lunghezzaSequenza) {
-        String sequenza = "";
-        while (numero > 0) {
-            sequenza += numToChar(numero % BASE);
-            numero /= BASE;
+    /*****************************************************/
+    public static int sequenceToNum(String sequence) {
+        int num = 0;
+        for (int i = 0; i < sequence.length(); i++) {
+            char c = sequence.charAt(i);
+            int n = charToNum(c);
+            num += n * Math.pow(BASE, i);
+        }
+        return num;
+    }
+
+    public static String numToSequence(int num, int sequenceLength) {
+        StringBuilder sequence = new StringBuilder();
+        for (int i = 0; i < sequenceLength; i++) {
+            int n = num % BASE;
+            char c = numToChar(n);
+            sequence.append(c);
+            num /= BASE;
         }
 
-        // Aggiungi zeri iniziali se necessario
-        while (sequenza.length() < lunghezzaSequenza) {
-            sequenza += ' ';
-        }
-
-        return sequenza;
+        return sequence.toString();
     }
 
     /*****************************************************/
