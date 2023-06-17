@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 public class Main {
     final static int BASE = 28;
-    final static int NUM_SUG = 8;
+    final static int NUM_SUG = 12;
     public record Couple(char character, int numOcc) implements Comparable<Couple>{
         @Override
         public String toString() {
@@ -27,7 +27,6 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException {
-        //todo change corpus
         String corpus = "C:\\Users\\dmari\\IdeaProjects\\SuggestionsCorpus\\files\\eng_news_2020_1M-sentences.txt";
         String result = "C:\\Users\\dmari\\IdeaProjects\\SuggestionsCorpus\\files\\result.txt";
 
