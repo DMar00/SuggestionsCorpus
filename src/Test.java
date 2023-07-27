@@ -10,14 +10,12 @@ public class Test {
 
         List<String> listData = Files.readAllLines(Paths.get(result));
         dataString = listData.get(0);
-        String input = "    ";
+        String input = "   a";
 
         char[] ss = getCheckedSuggestion(input);
         for(int i=0; i<ss.length; i++){
             System.out.print(ss[i]+" - ");
         }
-        //String suggestions = Main.getSuggestions(input,data);
-        //System.out.println("Suggestions: "+suggestions);
     }
 
     protected static char[] getCheckedSuggestion(String ctx) {

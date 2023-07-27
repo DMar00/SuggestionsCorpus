@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 public class Main {
     final static int BASE = 28;
-    final static int NUM_SUG = 12;
+    final static int NUM_SUG = 18;
     public record Couple(char character, int numOcc) implements Comparable<Couple>{
         @Override
         public String toString() {
@@ -32,7 +32,13 @@ public class Main {
 
         //sentences contains all strings in lowercase
         List<String> sentences = Files.readAllLines(Paths.get(corpus));
-        sentences = sentences.stream().map(String::toLowerCase).collect(Collectors.toList());
+        //sentences = sentences.stream().map(String::toLowerCase).collect(Collectors.toList());
+
+        sentences = sentences.stream()
+                .map(frase -> frase.split("\t"))
+                .filter(parti -> parti.length > 1)
+                .map(parti -> "   " + parti[1].toLowerCase())
+                .collect(Collectors.toList());
 
         int[][] occurrences = calculateSuggestions(sentences);
 
